@@ -4,11 +4,12 @@ import type { Node } from '../../characterDataTypes';
 
 interface TileProps {
   nikke: Node | undefined;
-  handleNikkeSelect: (nikke: Node) => void;
+  isInSquad: boolean;
+  handleNikkeClick: (nikke: Node, isInSquad: boolean) => void;
 }
 
 const Tile = (props: TileProps) => {
-  const { nikke, handleNikkeSelect: handleNikkeSelection } = props;
+  const { nikke, isInSquad, handleNikkeClick } = props;
 
   if (!nikke) {
     return (
@@ -38,7 +39,7 @@ const Tile = (props: TileProps) => {
   return (
     <Card
       sx={{ minWidth: 160, height: 440, margin: 0.5, bgcolor: rarityColor }}
-      onClick={() => handleNikkeSelection(nikke)}
+      onClick={() => handleNikkeClick(nikke, isInSquad)}
     >
       <CardMedia
         component="img"

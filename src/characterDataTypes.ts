@@ -156,6 +156,54 @@ export interface JpnDescriptionLevel10 {
   raw: string;
 }
 
+export interface TextNode {
+  data: {};
+  marks: [];
+  nodeType: string;
+  value: string;
+}
+
+export interface ListNode {
+  data: {};
+  content: [
+    {
+      data: {};
+      content: [
+        {
+          data: {};
+          marks: [];
+          value: string;
+          nodeType: string;
+        },
+        {
+          data: {};
+          marks: [];
+          value: string;
+          nodeType: string;
+        }
+      ];
+      nodeType: string;
+    },
+    {
+      data: {};
+      content: [
+        {
+          data: {};
+          marks: [
+            {
+              type: string;
+            }
+          ];
+          value: string;
+          nodeType: string;
+        }
+      ];
+      nodeType: string;
+    }
+  ];
+  nodeType: string;
+}
+
 export interface Skill {
   unitId: string;
   skillId: string;
