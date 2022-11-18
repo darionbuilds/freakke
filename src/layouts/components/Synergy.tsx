@@ -16,15 +16,17 @@ const SynergyPanel = (props: SynergyPanelProps) => {
     effect: string;
   }
 
-  interface SquadMemberSkills {
+  interface SquadMember {
     name: string;
     skills: Skill[];
   }
 
-  const squadSkills: SquadMemberSkills[] = [];
+  const squadSkills: SquadMember[] = [];
+
+  const burstCooldowns: [number[], number[], number[]] = [[], [], []];
 
   squad.forEach((squadMember) => {
-    const squadMemberSkills = {} as SquadMemberSkills;
+    const squadMemberSkills = {} as SquadMember;
 
     squadMemberSkills.name = squadMember.name;
     squadMemberSkills.skills = [];
@@ -33,8 +35,6 @@ const SynergyPanel = (props: SynergyPanelProps) => {
       const skillDescriptionJson: ListNode = JSON.parse(
         skill.descriptionLevel10.raw
       );
-
-      console.log();
 
       const skillClean: Skill = {
         name: skill.name,
@@ -45,34 +45,49 @@ const SynergyPanel = (props: SynergyPanelProps) => {
         effect: skillDescriptionJson.content[1].content[0].value,
       };
 
-      console.log(skillClean);
-      const target: string | undefined =
-        skillDescriptionJson.content[0].content[0].value
-          .split('Affects ')[1]
-          ?.split('.')[0];
-
-      if (target) {
-        if (target.includes('the enemy')) {
-          console.log('Enemy attack');
-        } else if (target.includes('self')) {
-          console.log('Self');
-        } else if (target.includes('ally')) {
-          if (target.includes('the ally')) {
-            console.log('Single buffer');
-          } else {
-            console.log(`Buffs ${Number(target.slice(0, 1))} allies`);
-          }
-        } else if (target.includes('allies')) {
-          if (target.includes(' all ')) {
-            console.log('Team buffer');
-          } else {
-            console.log('Targeted buffer');
-          }
+      if (skill.slot.toLowerCase() === 'burst' && skill.cooldown) {
+        switch (squadMember.burstType) {
+          case '1':
+            burstCooldowns[0].push(skill.cooldown);
+            break;
+          case '2':
+            burstCooldowns[1].push(skill.cooldown);
+            break;
+          case '3':
+            burstCooldowns[2].push(skill.cooldown);
+            break;
+          default:
+            throw new Error('Skill does not have a burst type');
         }
       }
 
+      // const target: string | undefined =
+      //   skillDescriptionJson.content[0].content[0].value
+      //     .split('Affects ')[1]
+      //     ?.split('.')[0];
+
+      // if (target) {
+      //   if (target.includes('the enemy')) {
+      //     console.log('Enemy attack');
+      //   } else if (target.includes('self')) {
+      //     console.log('Self');
+      //   } else if (target.includes('ally')) {
+      //     if (target.includes('the ally')) {
+      //       console.log('Single buffer');
+      //     } else {
+      //       console.log(`Buffs ${Number(target.slice(0, 1))} allies`);
+      //     }
+      //   } else if (target.includes('allies')) {
+      //     if (target.includes(' all ')) {
+      //       console.log('Team buffer');
+      //     } else {
+      //       console.log('Targeted buffer');
+      //     }
+      //   }
+      // }
+
       try {
-        squadMemberSkills.skills.push();
+        squadMemberSkills.skills.push(skillClean);
       } catch (error) {
         if (error instanceof Error) {
           // eslint-disable-next-line no-console
@@ -84,9 +99,30 @@ const SynergyPanel = (props: SynergyPanelProps) => {
     squadSkills.push(squadMemberSkills);
   });
 
+  // TODO: Toast notification of the problem
+  burstCooldowns.forEach((currentLevelCDs, index) => {
+    if (!currentLevelCDs.length) {
+      console.log(`Missing Burst ${index + 1}!`);
+    } else {
+      currentLevelCDs.sort((a, b) => a - b);
+
+      const greatestCD = currentLevelCDs[currentLevelCDs.length - 1];
+      if (typeof greatestCD === 'number') {
+        // if the greatest cooldown divided by 20
+        // is greater than the number of bursts in that tier
+        // there is a bottleneck
+
+        if (greatestCD / 20 > currentLevelCDs.length) {
+          console.log('Burst 1 Cooldown Conflict!', currentLevelCDs);
+        }
+      }
+    }
+  });
+
   return (
     <div>
       {squadSkills.map((squadMember, index) => {
+        console.log(squadMember);
         return (
           <div key={index}>
             {squadMember.skills.map((skill, indexI) => {
